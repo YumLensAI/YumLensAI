@@ -1,15 +1,12 @@
 import {useEffect, useMemo} from 'react';
 
 import RNFS from 'react-native-fs';
-import * as tf from '@tensorflow/tfjs';
-import {fetch} from '@tensorflow/tfjs-react-native';
 import {useTensorflowModel} from 'react-native-fast-tflite';
 
-import {
-  base64ImageToBuffer,
-  getClassNames,
-  imageBufferToTensor,
-} from '../utils';
+import * as tf from '@tensorflow/tfjs';
+import {fetch} from '@tensorflow/tfjs-react-native';
+
+import {base64ImageToTensor, getClassNames} from '../utils';
 
 const initializeTensorFlowJS = () => {
   tf.ready().then(() => fetch(''));
@@ -28,13 +25,14 @@ const usePredictModel = () => {
     try {
       const base64 = await RNFS.readFile(filePath, 'base64');
 
-      const imageBuffer = base64ImageToBuffer(base64);
-      const imageTensor = imageBufferToTensor(imageBuffer)
+      const imageTensor = base64ImageToTensor(base64);
+
+      const normalizedTensor = imageTensor
         .expandDims(0)
         .resizeBilinear([imgDimension!, imgDimension!])
         .div(255.0);
 
-      const predictionResult = await model!?.run([imageTensor.dataSync()]);
+      const predictionResult = await model!?.run([normalizedTensor.dataSync()]);
 
       const result = getClassNames(predictionResult[1]);
 

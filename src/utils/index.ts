@@ -1,2 +1,2 @@
-export * from './imageProcessing';
 export * from './model';
+export * from './tensor';
