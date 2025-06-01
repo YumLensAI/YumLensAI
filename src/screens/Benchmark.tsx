@@ -3,31 +3,30 @@ import {StatusBar, StyleSheet, Text, TextInput, View} from 'react-native';
 
 import DeviceInfo from 'react-native-device-info';
 
-import {SafeAreaView} from 'react-native-safe-area-context';
 import {
   activateKeepAwake,
   deactivateKeepAwake,
 } from '@sayem314/react-native-keep-awake';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import useBenchmark from '../hooks/useBenchmark';
 import usePredictModel from '../hooks/usePredictModel';
 import useTestDataset from '../hooks/useTestDataset';
 
-import saveBenchmarkRecords, {
-  BenchmarkRecord,
-  ExecutionEnvironment,
-} from '../services/benchmark';
+import {BenchmarkRecord, ExecutionEnvironment} from '../services/benchmark';
+import {saveStorageBenchmark} from '../utils/storage';
 
 import BenchmarkCard, {BenchmarkStatus} from '../components/BenchmarkCard';
 import {setBaseUrl} from '../constants/api';
 import {memory, model, os} from '../constants/device';
 
-const EXECUTION_TESTS_NUMBER = 3000;
+const EXECUTION_TESTS_NUMBER = 5;
 
 const Benchmark = () => {
   const {isLoaded, getImageUri} = useTestDataset();
   const {getLocalImageInference, state} = usePredictModel();
-  const {benchmarks, updateStatus, updateStep} = useBenchmark();
+  const {benchmarks, isSyncing, updateStatus, updateStep, triggerSync} =
+    useBenchmark();
 
   const onModelStatusChange = useCallback(() => {
     if (isLoaded && state === 'loaded') {
@@ -78,7 +77,10 @@ const Benchmark = () => {
       }
 
       updateStatus(environment, BenchmarkStatus.SAVING);
-      await saveBenchmarkRecords(benchmarkRecords, environment);
+
+      await saveStorageBenchmark(benchmarkRecords, environment);
+      await triggerSync();
+
       updateStatus(environment, BenchmarkStatus.COMPLETED);
     } catch (err) {
       updateStatus(environment, BenchmarkStatus.FAILED);
@@ -95,6 +97,7 @@ const Benchmark = () => {
 
       <View style={styles.headerWrapper}>
         <Text style={styles.headerTitle}>YumLensAI Benchmark</Text>
+        {isSyncing && <Text style={styles.headerSync}>Syncing ...</Text>}
       </View>
 
       <View style={styles.deviceInfoSection}>
@@ -118,7 +121,10 @@ const Benchmark = () => {
               placeholder="192.168.0.1"
               placeholderTextColor="blue"
               cursorColor="orangered"
-              onEndEditing={event => setBaseUrl(event.nativeEvent.text)}
+              onEndEditing={event => {
+                setBaseUrl(event.nativeEvent.text);
+                triggerSync();
+              }}
               style={styles.deviceInfoLineInput}
             />
           </View>
@@ -146,6 +152,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   headerWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
     paddingBlock: 10,
   },
@@ -153,6 +162,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#200a5e',
+  },
+  headerSync: {
+    fontSize: 12,
+    color: 'green',
   },
   sectionTitle: {
     fontSize: 16,
