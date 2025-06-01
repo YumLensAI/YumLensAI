@@ -20,7 +20,7 @@ import BenchmarkCard, {BenchmarkStatus} from '../components/BenchmarkCard';
 import {setBaseUrl} from '../constants/api';
 import {memory, model, os} from '../constants/device';
 
-const EXECUTION_TESTS_NUMBER = 5;
+const EXECUTION_TESTS_NUMBER = 3000;
 
 const Benchmark = () => {
   const {isLoaded, getImageUri} = useTestDataset();
