@@ -14,6 +14,7 @@ import usePredictModel from '../hooks/usePredictModel';
 import useTestDataset from '../hooks/useTestDataset';
 
 import {BenchmarkRecord, ExecutionEnvironment} from '../services/benchmark';
+import {getImageInference} from '../services/predict';
 import {saveStorageBenchmark} from '../utils/storage';
 
 import BenchmarkCard, {BenchmarkStatus} from '../components/BenchmarkCard';
@@ -39,11 +40,16 @@ const Benchmark = () => {
 
   const handleTestExecution = async (environment: ExecutionEnvironment) => {
     const benchmarkRecords: BenchmarkRecord[] = [];
+    const isLocalBenchmark = environment === 'local';
 
     activateKeepAwake();
 
     updateStatus(environment, BenchmarkStatus.EXECUTING);
     updateStep(environment, 0);
+
+    const handleImageInference = isLocalBenchmark
+      ? getLocalImageInference
+      : getImageInference;
 
     try {
       for (let i = 1; i <= EXECUTION_TESTS_NUMBER; i++) {
@@ -55,7 +61,7 @@ const Benchmark = () => {
         const initialBattery = (await DeviceInfo.getBatteryLevel()).toFixed(2);
 
         const startTimestamp = Date.now();
-        const detectedObjects = await getLocalImageInference(imgUri);
+        const detectedObjects = await handleImageInference(imgUri);
         const endTimestamp = Date.now();
 
         const finalBattery = (await DeviceInfo.getBatteryLevel()).toFixed(2);
@@ -139,6 +145,13 @@ const Benchmark = () => {
           currentStep={benchmarks.local.step}
           stepsTotal={EXECUTION_TESTS_NUMBER}
           onButtonPress={() => handleTestExecution('local')}
+        />
+        <BenchmarkCard
+          type="backend"
+          status={benchmarks.backend.status}
+          currentStep={benchmarks.backend.step}
+          stepsTotal={EXECUTION_TESTS_NUMBER}
+          onButtonPress={() => handleTestExecution('backend')}
         />
       </View>
     </SafeAreaView>
