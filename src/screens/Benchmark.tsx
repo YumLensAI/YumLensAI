@@ -21,7 +21,7 @@ import BenchmarkCard, {BenchmarkStatus} from '../components/BenchmarkCard';
 import {setBaseUrl} from '../constants/api';
 import {memory, model, os} from '../constants/device';
 
-const EXECUTION_TESTS_NUMBER = 3000;
+const EXECUTION_TESTS_NUMBER = 35000;
 
 const Benchmark = () => {
   const {isLoaded, getImageUri} = useTestDataset();
@@ -54,19 +54,19 @@ const Benchmark = () => {
     try {
       for (let i = 1; i <= EXECUTION_TESTS_NUMBER; i++) {
         const imgId = Math.floor(Math.random() * 112) + 1;
-        const imgUri = getImageUri(imgId);
+      const imgUri = getImageUri(imgId);
 
-        const fileName = imgUri.split('/').pop()!;
+      const fileName = imgUri.split('/').pop()!;
 
-        const initialBattery = (await DeviceInfo.getBatteryLevel()).toFixed(2);
+      const initialBattery = (await DeviceInfo.getBatteryLevel()).toFixed(2);
 
-        const startTimestamp = Date.now();
-        const detectedObjects = await handleImageInference(imgUri);
-        const endTimestamp = Date.now();
+      const startTimestamp = Date.now();
+      const detectedObjects = await handleImageInference(imgUri);
+      const endTimestamp = Date.now();
 
-        const finalBattery = (await DeviceInfo.getBatteryLevel()).toFixed(2);
+      const finalBattery = (await DeviceInfo.getBatteryLevel()).toFixed(2);
 
-        const elapsedTime = endTimestamp - startTimestamp;
+      const elapsedTime = endTimestamp - startTimestamp;
 
         updateStep(environment, i);
 

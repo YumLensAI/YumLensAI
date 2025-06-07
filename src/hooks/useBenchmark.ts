@@ -33,16 +33,16 @@ const useBenchmark = () => {
   };
 
   const triggerSync = async () => {
-    const storageBenchmarks = await getStorageBenchmarks();
-    if (storageBenchmarks.length >= 1) {
-      setIsSyncing(true);
-      for (const benchmark of storageBenchmarks) {
-        const status = await uploadBenchmark(benchmark);
-        if (!status.success) {
-          break;
+      const storageBenchmarks = getStorageBenchmarks();
+      if (storageBenchmarks.length >= 1) {
+        setIsSyncing(true);
+        for (const benchmark of storageBenchmarks) {
+          const status = await uploadBenchmark(benchmark);
+          if (!status.success) {
+            break;
+          }
         }
-      }
-      setIsSyncing(false);
+        setIsSyncing(false);
     }
   };
 
